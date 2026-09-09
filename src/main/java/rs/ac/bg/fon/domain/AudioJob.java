@@ -2,6 +2,8 @@ package rs.ac.bg.fon.domain;
 
 import jakarta.persistence.*;
 import rs.ac.bg.fon.dtos.AudioMetadata;
+import rs.ac.bg.fon.exceptions.AudioJobLifecycleException;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -108,5 +110,29 @@ public class AudioJob {
 
     public long getVersion() {
         return version;
+    }
+
+    public void markCompleted(AudioMetadata metadata){
+        if(status == AudioJobStatus.COMPLETED || status == AudioJobStatus.FAILED){
+            throw new AudioJobLifecycleException("Audio job has already finished");
+        }
+        status = AudioJobStatus.COMPLETED;
+        codecName = metadata.codecName();
+        sampleRate = metadata.sampleRate();
+        channels = metadata.channels();
+        duration = metadata.duration();
+        bitRate = metadata.bitRate();
+        size = metadata.size();
+        finishedAt = LocalDateTime.now();
+    }
+
+    public void markFailed(String message){
+        if(status == AudioJobStatus.COMPLETED || status == AudioJobStatus.FAILED){
+            throw new AudioJobLifecycleException("Audio job has already finished");
+        }
+        status = AudioJobStatus.FAILED;
+        ErrorMessage = message;
+        processingTryCounter++;
+        finishedAt = LocalDateTime.now();
     }
 }
