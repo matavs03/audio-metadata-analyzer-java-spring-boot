@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import rs.ac.bg.fon.exceptions.MetadataExtractionException;
+import rs.ac.bg.fon.domain.AudioJob;
 import rs.ac.bg.fon.services.AudioService;
 
 import java.io.IOException;
@@ -24,13 +24,13 @@ public class AudioController {
     }
 
     @PostMapping()
-    public ResponseEntity<String> uploadAudio(@RequestParam("file")MultipartFile file) throws IOException {
+    public ResponseEntity<AudioJob> uploadAudio(@RequestParam("file")MultipartFile file) throws IOException {
 
         try(InputStream in = file.getInputStream()){
-            String uuid = audioService.storeAudioFile(in, file.getOriginalFilename(), file.getSize());
-            return ResponseEntity.status(HttpStatus.OK).body("Audio file UUID: " + uuid);
-        } catch (IOException | MetadataExtractionException | InterruptedException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            AudioJob audioJob = audioService.storeAudioFile(in, file.getOriginalFilename(), file.getSize());
+            return ResponseEntity.status(HttpStatus.OK).body(audioJob);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
     }
